@@ -1,0 +1,8 @@
+
+		LIFE.SH
+		-------
+
+Multithreaded Game of Life.
+
+Usage: life.sh < life_world1.txt
+
