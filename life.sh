@@ -1,16 +1,16 @@
 #!/bin/bash
+# The Game of Life
 
-function get_item {
+function get_cell {
 
 	local MATRIX="$1"
 	local X="$2"
 	local Y="$3"
 
 	echo -e "$MATRIX" | awk '{if (NR==Y) print substr($0, X, 1);}' Y="$Y" X="$X"
-
 }
 
-function live_neighbours {
+function alive_cells {
 
 	local MATRIX="$1"
 	local X="$2"
@@ -31,32 +31,30 @@ function live_neighbours {
 	echo $(echo "$NEIGHBOURS" | grep -o "\*" | wc -l)
 }
 
-function calculate_row {
+function new_row {
 
 	local MATRIX="$1"
 	local Y="$2"
-	local LIVE_NEIGHBOURS
+	local X
+	local ALIVE_CELLS
 	local NEW_ROW=""
-	local ITEM
-	local COL
+	local CELL
 
-        for (( COL=1; COL<=$COLS; COL++ ))
+        for (( X=1; X<=$COLS; X++ ))
         do
-                LIVE_NEIGHBOURS=$(live_neighbours "$MATRIX" "$COL" "$Y")
-                ITEM="$(get_item "$MATRIX" $COL $Y)"
+                ALIVE_CELLS=$(alive_cells "$MATRIX" "$X" "$Y")
+                CELL="$(get_cell "$MATRIX" "$X" "$Y")"
 
-                #echo "$ROW,$COL: '$ITEM' '$LIVE_NEIGBOURS'"
+                if [ "$CELL" = "*" ]; then
 
-                if [ "$ITEM" = "*" ]; then
-
-                        if [ "$LIVE_NEIGHBOURS" = "3" -o "$LIVE_NEIGHBOURS" = "4" ]; then
+                        if [ "$ALIVE_CELLS" = "3" -o "$ALIVE_CELLS" = "4" ]; then
                                 NEW_ROW="${NEW_ROW}*"
                         else
                                 NEW_ROW="${NEW_ROW}."
                         fi
                 else
 
-                        if [ "$LIVE_NEIGHBOURS" = "3" ]; then
+                        if [ "$ALIVE_CELLS" = "3" ]; then
                                 NEW_ROW="${NEW_ROW}*"
                         else
                                 NEW_ROW="${NEW_ROW}."
@@ -64,8 +62,8 @@ function calculate_row {
 
                 fi
         done
-	echo "$Y $NEW_ROW"
 
+	echo "$Y $NEW_ROW"
 }
 
 ###    ###   ######   ###  ###    ###
@@ -73,46 +71,31 @@ function calculate_row {
 ### ## ###  ########  ###  ###  #####
 ###    ###  ###  ###  ###  ###    ###
 
-THE_WORLD="\
-..................
-....*.............
-.....*............
-...***............
-..................
-..................
-..................
-........***.......
-..................
-..................
-..................
-.................."
-
 # Read the initial world from stdin
 THE_WORLD="$(cat -)"
-
-rm life.tmp 2>/dev/null
-
-clear
-echo -e "$THE_WORLD"
-
-ROWS=$(echo $(echo -e "$THE_WORLD" | wc -l))
+NEW_WORLD=""
 COLS=$(echo $[ $(echo -e "$THE_WORLD" | head -1 | wc -c) - 1 ])
+ROWS=$(echo $(echo -e "$THE_WORLD" | wc -l))
 
-while true
+while [ ! "$THE_WORLD" == "$NEW_WORLD" ]
 do
+
+	[ ! "$NEW_WORLD" == "" ] && THE_WORLD="$NEW_WORLD"
+
+	clear
+	echo -e "$THE_WORLD"
+	rm life.tmp 2>/dev/null
 
 	for (( ROW=1; ROW<=$ROWS; ROW++ ))
 	do
 	
-		echo "$(calculate_row "$THE_WORLD" $ROW)" >> life.tmp &
+		echo "$(new_row "$THE_WORLD" "$ROW")" >> life.tmp &
 
 	done
 
 	wait
 
-	THE_WORLD="$(cat life.tmp | sort -n | awk '{print $2}')"
-	rm life.tmp
-	clear
-	echo -e "$THE_WORLD"
+	NEW_WORLD="$(cat life.tmp | sort -n | awk '{print $2}')"
 
 done
+
