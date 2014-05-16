@@ -1,3 +1,11 @@
+	ADD_SSL_CERTIFICATE.SH
+	----------------------
+
+Fetch SSL certificate from remote server and stores it
+to local Java's trustore.
+
+Usage: add_ssl_certificate.sh
+
 
 		LIFE.SH
 		-------
@@ -5,4 +13,14 @@
 Multithreaded Game of Life.
 
 Usage: life.sh < life_world1.txt
+
+
+	SHARE_SSH_KEYS.SH
+	-----------------
+
+Script for sharing SSH keys to remote server. It also
+generates keys if required.
+
+Usage: share_ssh_keys.sh my.host.fi
+
 
